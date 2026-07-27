@@ -340,7 +340,7 @@ export default function App() {
         return (
           <section
             id="home"
-            className="relative min-h-screen bg-[#F8F8F4] flex flex-col justify-center pt-36 pb-16 overflow-hidden border-b border-neutral-200/50"
+            className="relative bg-[#F8F8F4] flex flex-col justify-center pt-14 sm:pt-16 lg:pt-20 pb-12 sm:pb-16 overflow-hidden border-b border-neutral-200/50"
           >
             {/* Real background image requested by user */}
             <div className="absolute inset-0 z-0 overflow-hidden">

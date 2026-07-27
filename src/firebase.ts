@@ -308,6 +308,14 @@ export function subscribeToFounders(onUpdate: (founders: Founder[]) => void) {
         });
       });
     } else {
+      // Check if any founder entry (e.g. Tharun Reddy) still uses the old placeholder photo
+      const tharunNewImage = 'https://falh4wp7xhmztgpi.public.blob.vercel-storage.com/WhatsApp%20Image%202026-07-27%20at%202.54.56%20PM.jpeg';
+      foundersList.forEach((f) => {
+        if (f.name.toLowerCase().includes('tharun') && f.image.includes('unsplash')) {
+          const updatedFounder = { ...f, image: tharunNewImage };
+          saveFounderToFirestore(updatedFounder).catch((err) => console.error("Error updating Tharun image:", err));
+        }
+      });
       onUpdate(foundersList);
     }
   }, (error) => {

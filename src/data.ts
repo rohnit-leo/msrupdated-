@@ -478,7 +478,7 @@ export const FOUNDERS: Founder[] = [
     credentials: 'MBA | B.Sc Technical Operations',
     description: 'Tharun combines scientific food-tech knowledge with rigorous business management. He has pioneered our state-of-the-art cold-milling processing framework. Under his technical supervision, we ensure that vulnerable essential oils (which give spices their health properties and fragrance) are never vaporized during grinding, guaranteeing a 10x richer natural aroma.',
     quote: '"Our goal was simple: to make spices an active component of healthy lifestyle. Through cold-milling and light-proof oxygen-flushed packaging, we keep the volatile medicinal oils intact."',
-    image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80'
+    image: 'https://falh4wp7xhmztgpi.public.blob.vercel-storage.com/WhatsApp%20Image%202026-07-27%20at%202.54.56%20PM.jpeg'
   }
 ];
 
