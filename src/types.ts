@@ -33,6 +33,7 @@ export interface CartItem {
 }
 
 export interface Founder {
+  id?: string;
   name: string;
   role: string;
   credentials: string;

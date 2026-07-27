@@ -3,10 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { FOUNDERS } from '../data';
+import { FOUNDERS as DEFAULT_FOUNDERS } from '../data';
+import { Founder } from '../types';
 import { Quote, Sparkles, Sprout, HeartHandshake } from 'lucide-react';
 
-export default function FoundersSection() {
+interface FoundersSectionProps {
+  founders?: Founder[];
+}
+
+export default function FoundersSection({ founders }: FoundersSectionProps) {
+  const displayFounders = (founders && founders.length > 0) ? founders : DEFAULT_FOUNDERS;
   return (
     <section id="story" className="py-24 bg-white relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
@@ -90,7 +96,7 @@ export default function FoundersSection() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {FOUNDERS.map((founder, idx) => (
+            {displayFounders.map((founder, idx) => (
               <div
                 key={idx}
                 className="group bg-[#F8F8F4] rounded-2xl border border-neutral-200/60 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col justify-between"

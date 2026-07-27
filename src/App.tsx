@@ -41,13 +41,14 @@ import {
   Store
 } from 'lucide-react';
 
-import { Product, CartItem } from './types';
-import { PRODUCTS } from './data';
+import { Product, CartItem, Founder } from './types';
+import { PRODUCTS, FOUNDERS } from './data';
 import { 
   subscribeToProducts, 
   saveProductToFirestore, 
   deleteProductFromFirestore,
-  subscribeToCategories
+  subscribeToCategories,
+  subscribeToFounders
 } from './firebase';
 
 import AnnouncementBar from './components/AnnouncementBar';
@@ -72,6 +73,8 @@ import AdminPanel from './components/AdminPanel';
 export default function App() {
   // Products list loaded from Firestore with fallback to default PRODUCTS
   const [productsList, setProductsList] = useState<Product[]>([]);
+  // Founders / Visionaries list loaded from Firestore
+  const [foundersList, setFoundersList] = useState<Founder[]>([]);
 
   // Subscribe to real-time products list from Firestore and seed if empty
   useEffect(() => {
@@ -107,6 +110,14 @@ export default function App() {
       }
     });
 
+    return () => unsubscribe();
+  }, []);
+
+  // Subscribe to real-time founders / directors board from Firestore
+  useEffect(() => {
+    const unsubscribe = subscribeToFounders((loadedFounders) => {
+      setFoundersList(loadedFounders);
+    });
     return () => unsubscribe();
   }, []);
 
@@ -291,6 +302,7 @@ export default function App() {
     return (
       <AdminPanel 
         products={productsList} 
+        founders={foundersList}
         onUpdateProducts={handleUpdateProducts} 
         onBackToStore={() => {
           setIsAdminView(false);
@@ -595,7 +607,7 @@ export default function App() {
       })()}
 
       {/* 4. BRAND STORY SECTION (Our Story & Founders & Farmers) */}
-      <FoundersSection />
+      <FoundersSection founders={foundersList} />
 
       {/* 5. WHY CHOOSE MSR AROMA (Why Choose Cards) */}
       <section id="why-msr" className="py-24 bg-[#F8F8F4] border-t border-b border-neutral-200/50">

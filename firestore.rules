@@ -13,6 +13,9 @@ service cloud.firestore {
     match /enquiries/{enquiryId} {
       allow read, write: if true;
     }
+    match /founders/{founderId} {
+      allow read, write: if true;
+    }
     match /{document=**} {
       allow read, write: if false;
     }

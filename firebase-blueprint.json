@@ -63,6 +63,21 @@
         "updatedAt": { "type": "string" }
       },
       "required": ["name"]
+    },
+    "Founder": {
+      "title": "Founder",
+      "description": "Director / Visionary board member details and profile image",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "credentials": { "type": "string" },
+        "description": { "type": "string" },
+        "quote": { "type": "string" },
+        "image": { "type": "string" }
+      },
+      "required": ["name", "role", "image"]
     }
   },
   "firestore": {
@@ -81,6 +96,10 @@
     "/categories/{categoryId}": {
       "schema": { "$ref": "#/entities/Category" },
       "description": "Product categories"
+    },
+    "/founders/{founderId}": {
+      "schema": { "$ref": "#/entities/Founder" },
+      "description": "The Directors Board members / Meet Our Visionaries"
     }
   }
 }

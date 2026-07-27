@@ -12,7 +12,8 @@ import {
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import firebaseConfig from '../firebase-applet-config.json';
-import { Product } from './types';
+import { Product, Founder } from './types';
+import { FOUNDERS } from './data';
 
 // Initialize Firebase with auto-provisioned configuration
 const app = initializeApp(firebaseConfig);
@@ -282,5 +283,61 @@ export async function deleteCategoryFromFirestore(id: string) {
     await deleteDoc(catRef);
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, `categories/${id}`);
+  }
+}
+
+// ==========================================
+// FOUNDERS / DIRECTORS BOARD PERSISTENCE
+// ==========================================
+
+export function subscribeToFounders(onUpdate: (founders: Founder[]) => void) {
+  const foundersCollection = collection(db, 'founders');
+  return onSnapshot(foundersCollection, (snapshot) => {
+    const foundersList: Founder[] = [];
+    snapshot.forEach((docSnap) => {
+      foundersList.push({ id: docSnap.id, ...docSnap.data() } as Founder);
+    });
+
+    if (foundersList.length === 0) {
+      console.log("Firestore founders collection is empty. Seeding with initial Directors Board...");
+      FOUNDERS.forEach((f, index) => {
+        const founderId = f.id || `director-${index + 1}-${f.name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+        const founderWithId = { ...f, id: founderId };
+        saveFounderToFirestore(founderWithId).catch((err) => {
+          console.error("Error seeding founder:", err);
+        });
+      });
+    } else {
+      onUpdate(foundersList);
+    }
+  }, (error) => {
+    handleFirestoreError(error, OperationType.GET, 'founders');
+  });
+}
+
+export async function saveFounderToFirestore(founder: Founder) {
+  try {
+    const founderId = founder.id || `director-${Date.now()}-${founder.name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+    const founderRef = doc(db, 'founders', founderId);
+    await setDoc(founderRef, {
+      id: founderId,
+      name: founder.name,
+      role: founder.role,
+      credentials: founder.credentials || '',
+      description: founder.description || '',
+      quote: founder.quote || '',
+      image: founder.image
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `founders/${founder.id}`);
+  }
+}
+
+export async function deleteFounderFromFirestore(founderId: string) {
+  try {
+    const founderRef = doc(db, 'founders', founderId);
+    await deleteDoc(founderRef);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, `founders/${founderId}`);
   }
 }

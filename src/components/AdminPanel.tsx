@@ -28,9 +28,13 @@ import {
   Phone,
   Mail,
   Calendar,
-  DollarSign
+  DollarSign,
+  Camera,
+  UserCheck,
+  CheckCircle,
+  Image as ImageIcon
 } from 'lucide-react';
-import { Product } from '../types';
+import { Product, Founder } from '../types';
 import { 
   subscribeToOrders, 
   updateOrderStatusInFirestore, 
@@ -43,11 +47,15 @@ import {
   addCategoryToFirestore,
   updateCategoryInFirestore,
   deleteCategoryFromFirestore,
-  saveProductToFirestore
+  saveProductToFirestore,
+  subscribeToFounders,
+  saveFounderToFirestore,
+  deleteFounderFromFirestore
 } from '../firebase';
 
 interface AdminPanelProps {
   products: Product[];
+  founders?: Founder[];
   onUpdateProducts: (newProducts: Product[]) => void;
   onBackToStore: () => void;
 }
@@ -77,20 +85,32 @@ interface AdminOrder {
   timestamp?: string;
 }
 
-export default function AdminPanel({ products, onUpdateProducts, onBackToStore }: AdminPanelProps) {
+export default function AdminPanel({ products, founders: initialFounders, onUpdateProducts, onBackToStore }: AdminPanelProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [passcode, setPasscode] = useState('');
   const [showPasscode, setShowPasscode] = useState(false);
   const [loginError, setLoginError] = useState('');
 
   // Admin Navigation
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'categories' | 'enquiries'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'categories' | 'enquiries' | 'directors'>('overview');
 
   // Orders State
   const [orders, setOrders] = useState<AdminOrder[]>([]);
 
   // Enquiries State
   const [enquiries, setEnquiries] = useState<any[]>([]);
+
+  // Directors Board / Visionaries State
+  const [foundersList, setFoundersList] = useState<Founder[]>(initialFounders || []);
+  const [editingDirector, setEditingDirector] = useState<Founder | null>(null);
+  const [directorSuccessMsg, setDirectorSuccessMsg] = useState<string | null>(null);
+  const [isAddingDirector, setIsAddingDirector] = useState(false);
+  const [dirName, setDirName] = useState('');
+  const [dirRole, setDirRole] = useState('');
+  const [dirCredentials, setDirCredentials] = useState('');
+  const [dirQuote, setDirQuote] = useState('');
+  const [dirDescription, setDirDescription] = useState('');
+  const [dirImage, setDirImage] = useState('');
 
   // Editing/Form States
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -219,12 +239,114 @@ export default function AdminPanel({ products, onUpdateProducts, onBackToStore }
       setCategories(allMerged);
     });
 
+    // 4. Subscribe to Founders / Directors Board in real-time
+    const unsubscribeFounders = subscribeToFounders((loadedFounders) => {
+      setFoundersList(loadedFounders);
+    });
+
     return () => {
       unsubscribeOrders();
       unsubscribeEnquiries();
       unsubscribeCategories();
+      unsubscribeFounders();
     };
   }, [products]);
+
+  // Director Form Management Helpers
+  const resetDirectorForm = () => {
+    setDirName('');
+    setDirRole('');
+    setDirCredentials('');
+    setDirQuote('');
+    setDirDescription('');
+    setDirImage('');
+    setEditingDirector(null);
+    setIsAddingDirector(false);
+  };
+
+  const handleEditDirectorClick = (f: Founder) => {
+    setEditingDirector(f);
+    setIsAddingDirector(true);
+    setDirName(f.name);
+    setDirRole(f.role);
+    setDirCredentials(f.credentials || '');
+    setDirQuote(f.quote || '');
+    setDirDescription(f.description || '');
+    setDirImage(f.image);
+  };
+
+  const handleDirectorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, directorId?: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert("Image is too large. Please select an image under 8MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Img = reader.result as string;
+      if (directorId) {
+        const targetDir = foundersList.find(f => f.id === directorId);
+        if (targetDir) {
+          const updated = { ...targetDir, image: base64Img };
+          try {
+            await saveFounderToFirestore(updated);
+            setDirectorSuccessMsg(`✓ Photo for ${targetDir.name} successfully replaced and permanently saved on server & site!`);
+            setTimeout(() => setDirectorSuccessMsg(null), 5000);
+          } catch (err) {
+            console.error("Error updating founder image:", err);
+            alert("Failed to save image to Firestore.");
+          }
+        }
+      } else {
+        setDirImage(base64Img);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveDirector = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dirName.trim() || !dirRole.trim() || !dirImage) {
+      alert("Please provide the Director Name, Role, and Profile Image.");
+      return;
+    }
+
+    const payload: Founder = {
+      id: editingDirector?.id || `director-${Date.now()}-${dirName.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+      name: dirName.trim(),
+      role: dirRole.trim(),
+      credentials: dirCredentials.trim(),
+      quote: dirQuote.trim(),
+      description: dirDescription.trim(),
+      image: dirImage
+    };
+
+    try {
+      await saveFounderToFirestore(payload);
+      setDirectorSuccessMsg(`✓ ${payload.name}'s profile and image permanently saved to server & site!`);
+      setTimeout(() => setDirectorSuccessMsg(null), 5000);
+      resetDirectorForm();
+    } catch (err) {
+      console.error("Error saving founder profile:", err);
+      alert("Failed to save director profile.");
+    }
+  };
+
+  const handleDeleteDirector = async (id: string, name: string) => {
+    if (window.confirm(`Are you sure you want to remove ${name} from The Directors Board?`)) {
+      try {
+        await deleteFounderFromFirestore(id);
+        setDirectorSuccessMsg(`Removed ${name} from Directors Board.`);
+        setTimeout(() => setDirectorSuccessMsg(null), 3000);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to delete director.");
+      }
+    }
+  };
 
   // Handle Admin Log in
   const handleLogin = (e: React.FormEvent) => {
@@ -638,6 +760,7 @@ export default function AdminPanel({ products, onUpdateProducts, onBackToStore }
             {[
               { id: 'overview', label: 'Operations Overview', icon: <TrendingUp size={14} /> },
               { id: 'products', label: 'Manage Products', icon: <Package size={14} /> },
+              { id: 'directors', label: 'Directors Board', icon: <Camera size={14} /> },
               { id: 'orders', label: 'Client Orders', icon: <ListOrdered size={14} /> },
               { id: 'categories', label: 'Sourcing Categories', icon: <Tag size={14} /> },
               { id: 'enquiries', label: 'Partnership Enquiries', icon: <Users size={14} /> }
@@ -1490,6 +1613,284 @@ export default function AdminPanel({ products, onUpdateProducts, onBackToStore }
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* DIRECTORS BOARD / VISIONARIES MANAGEMENT TAB */}
+        {activeTab === 'directors' && (
+          <div className="space-y-8">
+            {/* Header & Success Banner */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-neutral-200">
+              <div>
+                <span className="text-[10px] uppercase font-extrabold tracking-[0.2em] text-[#B71C1C] block">
+                  Meet Our Visionaries Management
+                </span>
+                <h3 className="font-display text-2xl font-black text-neutral-800">
+                  The Directors Board ({foundersList.length})
+                </h3>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Upload & replace photos or update credentials & bio for the Directors Board. All uploads reflect live and permanently on the server and website.
+                </p>
+              </div>
+
+              {!isAddingDirector && (
+                <button
+                  onClick={() => {
+                    resetDirectorForm();
+                    setIsAddingDirector(true);
+                  }}
+                  className="px-4 py-2.5 bg-[#B71C1C] hover:bg-[#900000] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm cursor-pointer flex items-center gap-2 self-start md:self-auto"
+                >
+                  <Plus size={14} /> Add Visionary Director
+                </button>
+              )}
+            </div>
+
+            {directorSuccessMsg && (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-800 text-xs font-bold animate-fadeIn">
+                <CheckCircle size={18} className="text-emerald-600 flex-shrink-0" />
+                <span>{directorSuccessMsg}</span>
+              </div>
+            )}
+
+            {/* Modal / Inline Editor for adding or editing a director */}
+            {isAddingDirector && (
+              <div className="bg-white border-2 border-[#B71C1C]/20 rounded-2xl p-6 sm:p-8 shadow-lg space-y-6 relative">
+                <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
+                  <h4 className="font-display text-lg font-bold text-neutral-800">
+                    {editingDirector ? `Edit Director: ${editingDirector.name}` : 'Add New Visionary Director'}
+                  </h4>
+                  <button
+                    onClick={resetDirectorForm}
+                    className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg hover:bg-neutral-100 cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveDirector} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    {/* Left Column: Image Upload */}
+                    <div className="md:col-span-5 space-y-3">
+                      <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider">
+                        Director Photo *
+                      </label>
+                      <div className="relative aspect-square w-full rounded-2xl border-2 border-dashed border-neutral-300 bg-[#F8F8F4] overflow-hidden flex flex-col items-center justify-center group">
+                        {dirImage ? (
+                          <>
+                            <img
+                              src={dirImage}
+                              alt="Director Preview"
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4 text-center">
+                              <Camera className="text-white mb-2" size={28} />
+                              <span className="text-white text-xs font-bold">Click below to change image</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="p-6 text-center space-y-2">
+                            <ImageIcon size={36} className="text-neutral-400 mx-auto" />
+                            <p className="text-xs font-bold text-neutral-600">Upload Director Photo</p>
+                            <p className="text-[10px] text-neutral-400 font-medium">PNG, JPG, WEBP up to 8MB</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* File input button */}
+                      <div>
+                        <label className="w-full py-2.5 bg-neutral-900 hover:bg-black text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-xs">
+                          <Upload size={14} /> Select & Upload Photo
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleDirectorImageUpload(e)}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+
+                      {/* Or image URL input */}
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-neutral-400 mb-1">
+                          Or Paste Image URL directly
+                        </label>
+                        <input
+                          type="url"
+                          value={dirImage}
+                          onChange={(e) => setDirImage(e.target.value)}
+                          placeholder="https://images.unsplash.com/..."
+                          className="w-full text-xs border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B71C1C]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Right Column: Text Details */}
+                    <div className="md:col-span-7 space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={dirName}
+                          onChange={(e) => setDirName(e.target.value)}
+                          placeholder="e.g. M. Shravan Kumar"
+                          className="w-full text-xs border border-neutral-200 rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#B71C1C]"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                            Official Role / Title *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={dirRole}
+                            onChange={(e) => setDirRole(e.target.value)}
+                            placeholder="e.g. CEO & Managing Director"
+                            className="w-full text-xs border border-neutral-200 rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#B71C1C]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                            Credentials / Sub-Title
+                          </label>
+                          <input
+                            type="text"
+                            value={dirCredentials}
+                            onChange={(e) => setDirCredentials(e.target.value)}
+                            placeholder="e.g. B.Tech Agro-Tech & Culinary Visionary"
+                            className="w-full text-xs border border-neutral-200 rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#B71C1C]"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                          Personal Quote / Vision Statement
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={dirQuote}
+                          onChange={(e) => setDirQuote(e.target.value)}
+                          placeholder="e.g. Spices are active natural medicine. When we mill without heat..."
+                          className="w-full text-xs border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B71C1C]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                          Biography & Background
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={dirDescription}
+                          onChange={(e) => setDirDescription(e.target.value)}
+                          placeholder="e.g. Spearheads agricultural direct-buy partnerships across 200+ Telangana farms..."
+                          className="w-full text-xs border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B71C1C]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100">
+                    <button
+                      type="button"
+                      onClick={resetDirectorForm}
+                      className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 bg-[#234D20] hover:bg-[#1C3E19] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-md flex items-center gap-2 cursor-pointer"
+                    >
+                      <Save size={14} /> Save Profile & Permanently Publish
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Existing Directors Grid with direct upload options */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {foundersList.map((founder) => (
+                <div
+                  key={founder.id || founder.name}
+                  className="bg-white rounded-2xl border border-neutral-200/80 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
+                >
+                  {/* Photo with direct replace button */}
+                  <div className="relative aspect-square bg-neutral-100 border-b border-neutral-100 overflow-hidden">
+                    <img
+                      src={founder.image}
+                      alt={founder.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+                    {/* Quick Replace Image Overlay */}
+                    <div className="absolute inset-x-3 bottom-3 flex items-center justify-between gap-2">
+                      <label className="flex-1 bg-white/95 hover:bg-white text-neutral-900 text-[10px] font-bold uppercase tracking-wider py-2 px-3 rounded-lg shadow-md backdrop-blur-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all hover:scale-[1.02]">
+                        <Camera size={13} className="text-[#B71C1C]" />
+                        <span>Upload Photo</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleDirectorImageUpload(e, founder.id)}
+                          className="hidden"
+                        />
+                      </label>
+
+                      <button
+                        onClick={() => handleEditDirectorClick(founder)}
+                        className="p-2 bg-white/90 hover:bg-white text-neutral-800 rounded-lg shadow-md transition-all hover:scale-105 cursor-pointer"
+                        title="Edit Full Profile"
+                      >
+                        <Edit size={13} />
+                      </button>
+
+                      {foundersList.length > 1 && (
+                        <button
+                          onClick={() => founder.id && handleDeleteDirector(founder.id, founder.name)}
+                          className="p-2 bg-white/90 hover:bg-red-50 text-red-600 rounded-lg shadow-md transition-all hover:scale-105 cursor-pointer"
+                          title="Delete Director"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="absolute top-3 left-3 bg-[#B71C1C] text-white text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded shadow-xs">
+                      {founder.credentials || 'Director'}
+                    </div>
+                  </div>
+
+                  {/* Bio summary */}
+                  <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-display font-bold text-base text-neutral-800">{founder.name}</h4>
+                      <p className="text-[11px] font-extrabold text-[#B71C1C] tracking-wide uppercase mt-0.5">{founder.role}</p>
+                      <p className="text-xs text-neutral-500 mt-2 leading-relaxed font-medium line-clamp-3">
+                        {founder.description}
+                      </p>
+                    </div>
+
+                    {founder.quote && (
+                      <div className="pt-3 border-t border-neutral-100 bg-[#F8F8F4] p-3 rounded-lg text-[11px] font-medium italic text-neutral-600">
+                        "{founder.quote}"
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </main>
