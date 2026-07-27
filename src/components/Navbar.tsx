@@ -71,12 +71,14 @@ export default function Navbar({
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
-          {/* Logo Brand Title - replaced with image as requested */}
-          <a href="#home" className="flex items-center group py-1" id="logo-link">
+          {/* Logo Brand Title - compact and elegant logo */}
+          <a href="#home" className="flex items-center group py-0.5" id="logo-link">
             <img 
               src="https://a8cw5fshupvoh5ik.public.blob.vercel-storage.com/IMG_2829.PNG" 
               alt="MSR Aroma" 
-              className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              className={`${
+                isScrolled ? 'h-8 sm:h-9 md:h-10' : 'h-10 sm:h-11 md:h-12'
+              } w-auto object-contain transition-all duration-300 group-hover:scale-105`}
               referrerPolicy="no-referrer"
             />
           </a>
