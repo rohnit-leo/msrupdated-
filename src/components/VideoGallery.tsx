@@ -15,6 +15,7 @@ const VIDEO_URLS = [
 
 interface SingleVideoPlayerProps {
   url: string;
+  key?: React.Key;
 }
 
 function SingleVideoPlayer({ url }: SingleVideoPlayerProps) {

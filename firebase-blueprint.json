@@ -1,0 +1,86 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Spice or masala product listing",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "weightOptions": { "type": "array" },
+        "pricesByWeight": { "type": "object" },
+        "description": { "type": "string" },
+        "benefits": { "type": "array" },
+        "ingredients": { "type": "string" },
+        "storageInstructions": { "type": "string" },
+        "nutritionalInfo": { "type": "string" },
+        "packagingDetails": { "type": "string" },
+        "badge": { "type": "string" },
+        "image": { "type": "string" }
+      },
+      "required": ["name", "category", "weightOptions", "pricesByWeight", "description", "image"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer spice order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customer": { "type": "object" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "discount": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "status": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["customer", "items", "total", "status", "timestamp"]
+    },
+    "Enquiry": {
+      "title": "Distributor Enquiry",
+      "description": "Distributor or bulk purchase enquiry",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "businessType": { "type": "string" },
+        "city": { "type": "string" },
+        "quantityRequired": { "type": "string" },
+        "message": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["name", "phone", "email", "timestamp"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Product category definition",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Collection of all available products"
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Customer order records"
+    },
+    "/enquiries/{enquiryId}": {
+      "schema": { "$ref": "#/entities/Enquiry" },
+      "description": "Distributor enquiry submissions"
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Product categories"
+    }
+  }
+}

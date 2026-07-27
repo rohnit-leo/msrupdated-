@@ -3,31 +3,75 @@ import {
   getFirestore, 
   collection, 
   doc, 
+  getDocFromServer,
   onSnapshot, 
   setDoc, 
   addDoc, 
   deleteDoc, 
-  updateDoc, 
-  query, 
-  orderBy 
+  updateDoc 
 } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import firebaseConfig from '../firebase-applet-config.json';
 import { Product } from './types';
 
-const firebaseConfig = {
-  projectId: "true-chassis-4t3g1",
-  appId: "1:630951274376:web:c835d94b05d83c0477fc3d",
-  apiKey: "AIzaSyDp5QwMfLxnFMIR3uekOIisOLw2vzm0NT8",
-  authDomain: "true-chassis-4t3g1.firebaseapp.com",
-  firestoreDatabaseId: "ai-studio-msraromapremiums-b63f27f7-6e62-4880-80ce-641a9cc8798d",
-  storageBucket: "true-chassis-4t3g1.firebasestorage.app",
-  messagingSenderId: "630951274376"
-};
-
-// Initialize Firebase
+// Initialize Firebase with auto-provisioned configuration
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with the custom database ID
+// Initialize Firestore with custom database ID from configuration
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const auth = getAuth(app);
+
+// Test server connection on boot
+async function testConnection() {
+  try {
+    await getDocFromServer(doc(db, '_connection_test_', 'init'));
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.error("Please check your Firebase configuration.");
+    }
+  }
+}
+testConnection();
+
+// Error Handler for Firestore Operations
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+  };
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 // ==========================================
 // PRODUCTS PERSISTENCE
@@ -40,18 +84,15 @@ export function subscribeToProducts(onUpdate: (products: Product[]) => void) {
     snapshot.forEach((docSnap) => {
       productsList.push({ id: docSnap.id, ...docSnap.data() } as Product);
     });
-    // If database is empty, we don't return an empty array instantly; 
-    // the calling code will seed the database with the default products list.
     onUpdate(productsList);
   }, (error) => {
-    console.error("Error subscribing to products:", error);
+    handleFirestoreError(error, OperationType.GET, 'products');
   });
 }
 
 export async function saveProductToFirestore(product: Product) {
   try {
     const productRef = doc(db, 'products', product.id);
-    // Use setDoc so we can specify the id (to match products from data.ts)
     await setDoc(productRef, {
       name: product.name,
       category: product.category,
@@ -67,8 +108,7 @@ export async function saveProductToFirestore(product: Product) {
       image: product.image
     });
   } catch (error) {
-    console.error("Error saving product to Firestore:", error);
-    throw error;
+    handleFirestoreError(error, OperationType.WRITE, `products/${product.id}`);
   }
 }
 
@@ -77,8 +117,7 @@ export async function deleteProductFromFirestore(productId: string) {
     const productRef = doc(db, 'products', productId);
     await deleteDoc(productRef);
   } catch (error) {
-    console.error("Error deleting product from Firestore:", error);
-    throw error;
+    handleFirestoreError(error, OperationType.DELETE, `products/${productId}`);
   }
 }
 
@@ -88,13 +127,11 @@ export async function deleteProductFromFirestore(productId: string) {
 
 export function subscribeToOrders(onUpdate: (orders: any[]) => void) {
   const ordersCollection = collection(db, 'orders');
-  // Order by date descending or keep unordered if no firestore index is ready
   return onSnapshot(ordersCollection, (snapshot) => {
     const ordersList: any[] = [];
     snapshot.forEach((docSnap) => {
       ordersList.push({ id: docSnap.id, ...docSnap.data() });
     });
-    // Sort in client side by default to ensure we don't run into "missing index" errors in Firestore
     ordersList.sort((a, b) => {
       const dateA = new Date(a.timestamp || a.date || 0).getTime();
       const dateB = new Date(b.timestamp || b.date || 0).getTime();
@@ -102,13 +139,12 @@ export function subscribeToOrders(onUpdate: (orders: any[]) => void) {
     });
     onUpdate(ordersList);
   }, (error) => {
-    console.error("Error subscribing to orders:", error);
+    handleFirestoreError(error, OperationType.GET, 'orders');
   });
 }
 
 export async function addOrderToFirestore(order: any) {
   try {
-    // We can use a custom ID or let Firestore generate it. If the order has an id, use setDoc.
     const orderId = order.id || 'MSR-' + Math.floor(100000 + Math.random() * 900000);
     const orderRef = doc(db, 'orders', orderId);
     const orderData = {
@@ -119,8 +155,7 @@ export async function addOrderToFirestore(order: any) {
     await setDoc(orderRef, orderData);
     return orderId;
   } catch (error) {
-    console.error("Error adding order to Firestore:", error);
-    throw error;
+    handleFirestoreError(error, OperationType.WRITE, 'orders');
   }
 }
 
@@ -129,8 +164,7 @@ export async function updateOrderStatusInFirestore(orderId: string, status: stri
     const orderRef = doc(db, 'orders', orderId);
     await updateDoc(orderRef, { status });
   } catch (error) {
-    console.error("Error updating order status in Firestore:", error);
-    throw error;
+    handleFirestoreError(error, OperationType.UPDATE, `orders/${orderId}`);
   }
 }
 
@@ -139,8 +173,7 @@ export async function deleteOrderFromFirestore(orderId: string) {
     const orderRef = doc(db, 'orders', orderId);
     await deleteDoc(orderRef);
   } catch (error) {
-    console.error("Error deleting order from Firestore:", error);
-    throw error;
+    handleFirestoreError(error, OperationType.DELETE, `orders/${orderId}`);
   }
 }
 
@@ -162,7 +195,7 @@ export function subscribeToEnquiries(onUpdate: (enquiries: any[]) => void) {
     });
     onUpdate(enquiriesList);
   }, (error) => {
-    console.error("Error subscribing to enquiries:", error);
+    handleFirestoreError(error, OperationType.GET, 'enquiries');
   });
 }
 
@@ -175,8 +208,7 @@ export async function addEnquiryToFirestore(enquiry: any) {
     const enquiriesCollection = collection(db, 'enquiries');
     await addDoc(enquiriesCollection, enquiryWithTimestamp);
   } catch (error) {
-    console.error("Error adding enquiry to Firestore:", error);
-    throw error;
+    handleFirestoreError(error, OperationType.CREATE, 'enquiries');
   }
 }
 
@@ -185,8 +217,7 @@ export async function deleteEnquiryFromFirestore(enquiryId: string) {
     const enquiryRef = doc(db, 'enquiries', enquiryId);
     await deleteDoc(enquiryRef);
   } catch (error) {
-    console.error("Error deleting enquiry from Firestore:", error);
-    throw error;
+    handleFirestoreError(error, OperationType.DELETE, `enquiries/${enquiryId}`);
   }
 }
 
@@ -203,7 +234,6 @@ export function subscribeToCategories(onUpdate: (categories: { id: string; name:
     });
 
     if (categoriesList.length === 0) {
-      // Seed default categories if database is empty
       const defaultCategories = ['Spices', 'Masalas'];
       defaultCategories.forEach(async (catName) => {
         try {
@@ -217,7 +247,7 @@ export function subscribeToCategories(onUpdate: (categories: { id: string; name:
       onUpdate(categoriesList);
     }
   }, (error) => {
-    console.error("Error subscribing to categories:", error);
+    handleFirestoreError(error, OperationType.GET, 'categories');
   });
 }
 
@@ -230,8 +260,7 @@ export async function addCategoryToFirestore(name: string) {
       createdAt: new Date().toISOString()
     });
   } catch (error) {
-    console.error("Error adding category to Firestore:", error);
-    throw error;
+    handleFirestoreError(error, OperationType.WRITE, 'categories');
   }
 }
 
@@ -243,8 +272,7 @@ export async function updateCategoryInFirestore(id: string, newName: string) {
       updatedAt: new Date().toISOString()
     });
   } catch (error) {
-    console.error("Error updating category in Firestore:", error);
-    throw error;
+    handleFirestoreError(error, OperationType.UPDATE, `categories/${id}`);
   }
 }
 
@@ -253,7 +281,6 @@ export async function deleteCategoryFromFirestore(id: string) {
     const catRef = doc(db, 'categories', id);
     await deleteDoc(catRef);
   } catch (error) {
-    console.error("Error deleting category from Firestore:", error);
-    throw error;
+    handleFirestoreError(error, OperationType.DELETE, `categories/${id}`);
   }
 }
