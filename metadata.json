@@ -1,0 +1,8 @@
+{
+  "name": "Remix: MSR Aroma - Premium Spices",
+  "description": "A luxury eCommerce experience for MSR Aroma Private Limited, where tradition meets agricultural science. Premium, zero-additive spices sourced directly from farms.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

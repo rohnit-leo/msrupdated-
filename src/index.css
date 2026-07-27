@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --color-editorial-cream: #F8F8F4;
+  --color-editorial-charcoal: #1B1B1B;
+  --color-editorial-red: #B71C1C;
+  --color-editorial-green: #234D20;
+  --color-editorial-gold: #E0A106;
+  
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+}
+
+.animate-marquee {
+  display: inline-block;
+  animation: marquee 30s linear infinite;
+}
+
+/* Custom typographic styling for the Editorial Aesthetic */
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-serif);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-editorial-cream);
+  color: var(--color-editorial-charcoal);
+}
