@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- Homepage & Core Store -->
+  <url>
+    <loc>https://msraroma.com/</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://a8cw5fshupvoh5ik.public.blob.vercel-storage.com/IMG_2829.PNG</image:loc>
+      <image:title>MSR Aroma Pure Spices &amp; Agricultural Science</image:title>
+    </image:image>
+  </url>
+
+  <!-- Products & Spices Collection -->
+  <url>
+    <loc>https://msraroma.com/#spices</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Agricultural Process & Quality Standards -->
+  <url>
+    <loc>https://msraroma.com/#process</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Directors Board & Brand Story -->
+  <url>
+    <loc>https://msraroma.com/#story</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Health & Chemical-Free Comparison -->
+  <url>
+    <loc>https://msraroma.com/#why-msr</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Authentic Recipes & Culinary Guide -->
+  <url>
+    <loc>https://msraroma.com/#recipes</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Knowledge Center & Spice Science -->
+  <url>
+    <loc>https://msraroma.com/#knowledge</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Wholesale & Distributor Enquiry -->
+  <url>
+    <loc>https://msraroma.com/#distributor</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Frequently Asked Questions -->
+  <url>
+    <loc>https://msraroma.com/#faqs</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Contact Us -->
+  <url>
+    <loc>https://msraroma.com/#contact</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>

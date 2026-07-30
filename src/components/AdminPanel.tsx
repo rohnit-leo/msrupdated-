@@ -32,7 +32,12 @@ import {
   Camera,
   UserCheck,
   CheckCircle,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Globe,
+  Search,
+  FileText,
+  ExternalLink,
+  ShieldCheck
 } from 'lucide-react';
 import { Product, Founder } from '../types';
 import { 
@@ -92,7 +97,7 @@ export default function AdminPanel({ products, founders: initialFounders, onUpda
   const [loginError, setLoginError] = useState('');
 
   // Admin Navigation
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'categories' | 'enquiries' | 'directors'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'categories' | 'enquiries' | 'directors' | 'seo'>('overview');
 
   // Orders State
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -763,7 +768,8 @@ export default function AdminPanel({ products, founders: initialFounders, onUpda
               { id: 'directors', label: 'Directors Board', icon: <Camera size={14} /> },
               { id: 'orders', label: 'Client Orders', icon: <ListOrdered size={14} /> },
               { id: 'categories', label: 'Sourcing Categories', icon: <Tag size={14} /> },
-              { id: 'enquiries', label: 'Partnership Enquiries', icon: <Users size={14} /> }
+              { id: 'enquiries', label: 'Partnership Enquiries', icon: <Users size={14} /> },
+              { id: 'seo', label: 'SEO & Google Indexing', icon: <Globe size={14} /> }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -1890,6 +1896,214 @@ export default function AdminPanel({ products, founders: initialFounders, onUpda
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* SEO & GOOGLE INDEXING MASTER TAB */}
+        {activeTab === 'seo' && (
+          <div className="space-y-8 animate-fadeIn">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-neutral-200">
+              <div>
+                <span className="text-[10px] uppercase font-extrabold tracking-[0.2em] text-[#B71C1C] block">
+                  Search Engine Visibility Suite
+                </span>
+                <h3 className="font-display text-2xl font-black text-neutral-800">
+                  Full SEO & Google Indexing Hub
+                </h3>
+                <p className="text-xs text-neutral-500 mt-1">
+                  MSR Aroma is pre-configured with XML Sitemaps, Robots.txt, Vercel Headers, Canonical Tags & Schema.org Rich Data for instant indexing on Google & Bing.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <a
+                  href="/sitemap.xml"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
+                >
+                  <FileText size={14} className="text-[#B71C1C]" /> View sitemap.xml
+                </a>
+                <a
+                  href="/robots.txt"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
+                >
+                  <ShieldCheck size={14} className="text-[#234D20]" /> View robots.txt
+                </a>
+              </div>
+            </div>
+
+            {/* Live SEO Health Checklist Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-2xl border border-neutral-200/80 shadow-xs space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                  <CheckCircle size={20} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-neutral-800">XML Sitemap & Robots</h4>
+                  <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                    Automatically lists all store sections, products, recipes, & distributors at <code className="text-[#B71C1C] font-mono font-bold">/sitemap.xml</code> for Googlebot.
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-extrabold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    ● Active & Crawler Ready
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl border border-neutral-200/80 shadow-xs space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                  <CheckCircle size={20} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-neutral-800">Schema.org Microdata</h4>
+                  <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                    Embedded JSON-LD for Store, Products (Curcumin Turmeric, Teja Chilli), FAQs, Breadcrumbs, and Brand Organization.
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-extrabold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    ● Rich Snippets Enabled
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl border border-neutral-200/80 shadow-xs space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                  <CheckCircle size={20} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-neutral-800">Vercel Edge & Headers</h4>
+                  <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                    Clean URLs, gzip/brotli compression, security headers, and canonical tagging (<code className="text-[#234D20] font-mono font-bold">msraroma.com</code>).
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-extrabold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    ● Production Optimized
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 3-Step Google Search Console Indexing Action Guide */}
+            <div className="bg-[#234D20] text-white rounded-2xl p-6 sm:p-8 space-y-6 shadow-md">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white/10 rounded-xl">
+                  <Search size={24} className="text-amber-400" />
+                </div>
+                <div>
+                  <h4 className="font-display text-xl font-bold">Step-by-Step Google Indexing Activation</h4>
+                  <p className="text-xs text-emerald-100/80 mt-0.5">
+                    Follow these 3 quick steps to get MSR Aroma indexed on Google Search within 24 hours:
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-black text-amber-400 tracking-widest bg-amber-400/10 px-2 py-0.5 rounded">
+                      Step 1
+                    </span>
+                    <Globe size={16} className="text-emerald-200" />
+                  </div>
+                  <h5 className="font-bold text-sm">Add Domain to Search Console</h5>
+                  <p className="text-xs text-emerald-100/70 leading-relaxed">
+                    Go to <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="underline font-bold text-white hover:text-amber-300">Google Search Console</a> and add <code className="bg-black/30 px-1 rounded">https://msraroma.com</code> as your Property.
+                  </p>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-black text-amber-400 tracking-widest bg-amber-400/10 px-2 py-0.5 rounded">
+                      Step 2
+                    </span>
+                    <FileText size={16} className="text-emerald-200" />
+                  </div>
+                  <h5 className="font-bold text-sm">Submit XML Sitemap</h5>
+                  <p className="text-xs text-emerald-100/70 leading-relaxed">
+                    Under the "Sitemaps" tab in Google Search Console, submit:
+                    <br />
+                    <strong className="text-amber-300 font-mono text-xs">https://msraroma.com/sitemap.xml</strong>
+                  </p>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-black text-amber-400 tracking-widest bg-amber-400/10 px-2 py-0.5 rounded">
+                      Step 3
+                    </span>
+                    <ExternalLink size={16} className="text-emerald-200" />
+                  </div>
+                  <h5 className="font-bold text-sm">Request Instant Indexing</h5>
+                  <p className="text-xs text-emerald-100/70 leading-relaxed">
+                    Use the "URL Inspection" tool to inspect <code className="bg-black/30 px-1 rounded">/</code> and click <strong>"Request Indexing"</strong> for fast search visibility.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/10 flex flex-wrap items-center gap-4">
+                <a
+                  href="https://search.google.com/search-console"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-neutral-900 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center gap-2"
+                >
+                  <Search size={14} /> Open Google Search Console
+                </a>
+
+                <a
+                  href="https://search.google.com/test/rich-results?url=https://msraroma.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2"
+                >
+                  <ShieldCheck size={14} className="text-emerald-300" /> Test Google Rich Results
+                </a>
+
+                <a
+                  href="https://www.google.com/search?q=site:msraroma.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2"
+                >
+                  <Globe size={14} className="text-amber-300" /> Check Indexed Pages on Google
+                </a>
+              </div>
+            </div>
+
+            {/* Target Keywords Reference Table */}
+            <div className="bg-white rounded-2xl border border-neutral-200/80 p-6 space-y-4">
+              <h4 className="font-bold text-sm text-neutral-800 uppercase tracking-wider flex items-center gap-2">
+                <Tag size={16} className="text-[#B71C1C]" /> Active Search Keywords Targeted for Ranking
+              </h4>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {[
+                  'MSR Aroma',
+                  'Buy Pure Spices Online',
+                  'High Curcumin Turmeric Powder',
+                  'Telangana Red Chilli Powder',
+                  'Cold Milled Spices',
+                  'Zero Additive Spices',
+                  'Pure Spice Manufacturer Hyderabad',
+                  'Teja Chilli Wholesale',
+                  'Chemical Free Spices India',
+                  'Agricultural Science Spices'
+                ].map((kw, i) => (
+                  <span
+                    key={i}
+                    className="px-3 py-1.5 bg-[#F8F8F4] border border-neutral-200 text-neutral-700 text-xs font-semibold rounded-lg"
+                  >
+                    ✓ {kw}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         )}

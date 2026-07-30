@@ -1,0 +1,16 @@
+# MSR Aroma - Robots.txt for Google & Search Engine Indexing
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /?admin=true
+
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+
+# XML Sitemap link for Google Search Console & Bing Webmaster Tools
+Sitemap: https://msraroma.com/sitemap.xml
