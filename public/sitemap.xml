@@ -4,8 +4,18 @@
   
   <!-- Homepage & Core Store -->
   <url>
+    <loc>https://msr.nexturex.com/</loc>
+    <lastmod>2026-07-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://a8cw5fshupvoh5ik.public.blob.vercel-storage.com/IMG_2829.PNG</image:loc>
+      <image:title>MSR Aroma Pure Spices &amp; Agricultural Science</image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://msraroma.com/</loc>
-    <lastmod>2026-07-28</lastmod>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>

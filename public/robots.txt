@@ -13,4 +13,5 @@ Allow: /
 Disallow: /admin
 
 # XML Sitemap link for Google Search Console & Bing Webmaster Tools
+Sitemap: https://msr.nexturex.com/sitemap.xml
 Sitemap: https://msraroma.com/sitemap.xml

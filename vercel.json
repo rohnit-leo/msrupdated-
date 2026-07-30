@@ -56,6 +56,10 @@
       "destination": "/robots.txt"
     },
     {
+      "source": "/google5c5874fddee15bd4.html",
+      "destination": "/google5c5874fddee15bd4.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
